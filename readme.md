@@ -44,16 +44,7 @@ Currently supported card types:
 - Python 3.12 (or compatible version)
 - MySQL server
 
-## Security notes
 
-Make sure you do not commit secrets to the repository.
-
-Add these lines to `.gitignore`:
-
-```plaintext
-.venv/
-config.toml
-```
 
 
 
