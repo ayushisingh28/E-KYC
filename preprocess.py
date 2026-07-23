@@ -19,13 +19,14 @@ logging.basicConfig(filename=os.path.join(log_dir, "ekyc_logs.log"), level=loggi
 # logging.warning("This is a warning message.")
 # logging.error("This is an error message.")
 
-config_path = "config.yaml"
-config = read_yaml(config_path)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(BASE_DIR, "config.yaml")
+config = read_yaml(config_path) or {}
 # print(config)
 
-artifacts = config['artifacts']
-intermediate_dir_path = artifacts['INTERMIDEIATE_DIR']
-conour_file_name = artifacts['CONTOUR_FILE']
+artifacts = config.get('artifacts', {}) or {}
+intermediate_dir_path = artifacts.get('INTERMIDEIATE_DIR', 'data/02_intermediate_data')
+conour_file_name = artifacts.get('CONTOUR_FILE', 'contour_id.jpg')
 # print(intermediate_dir_path)
 
 def read_image(image_path, is_uploaded=False):

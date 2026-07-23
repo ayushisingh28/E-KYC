@@ -3,7 +3,12 @@ from pathlib import Path
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
 os.environ.setdefault("TF_ENABLE_ONEDNN_OPTS", "0")
 
-from deepface import DeepFace
+try:
+    from deepface import DeepFace
+except Exception as exc:
+    DeepFace = None
+    logging.getLogger(__name__).warning("DeepFace import failed: %s", exc)
+
 import cv2
 import logging
 from utils import file_exists, read_yaml, resolve_path
@@ -16,11 +21,11 @@ logging.basicConfig(filename=os.path.join(log_dir,"ekyc_logs.log"), level=loggin
 
 BASE_DIR = Path(__file__).resolve().parent
 config_path = str(BASE_DIR / "config.yaml")
-config = read_yaml(config_path)
+config = read_yaml(config_path) or {}
 
-artifacts = config['artifacts']
-cascade_path = resolve_path(artifacts['HAARCASCADE_PATH'], str(BASE_DIR))
-output_path = resolve_path(artifacts['INTERMIDEIATE_DIR'], str(BASE_DIR))
+artifacts = config.get('artifacts', {}) or {}
+cascade_path = resolve_path(artifacts.get('HAARCASCADE_PATH', 'data/models/haarcascade_frontalface_default.xml'), str(BASE_DIR))
+output_path = resolve_path(artifacts.get('INTERMIDEIATE_DIR', 'data/02_intermediate_data'), str(BASE_DIR))
 
 if output_path:
     os.makedirs(output_path, exist_ok=True)
@@ -101,6 +106,11 @@ def detect_and_extract_face(img):
 
 def deepface_face_comparison(image1_path, image2_path):
     logging.info("Verifying the images....")
+    if DeepFace is None:
+        message = "Face verification is unavailable because DeepFace could not be loaded in this environment."
+        logging.warning(message)
+        return False, message
+
     img1_exists = file_exists(image1_path)
     img2_exists = file_exists(image2_path)
 
@@ -151,6 +161,10 @@ def deepface_face_comparison(image1_path, image2_path):
 
 def get_face_embeddings(image_path):
     logging.info(f"Retrieving face embeddings from image: {image_path}")
+
+    if DeepFace is None:
+        logging.warning("DeepFace is unavailable; skipping embedding generation.")
+        return None
 
     # Check if image exists
     if not file_exists(image_path):

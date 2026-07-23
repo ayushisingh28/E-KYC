@@ -1961,3 +1961,6 @@ delete_url: "/_stcore/upload_file/4a4343d6-cffa-4658-bded-91e8061f2343/c733ed8b-
 [2026-07-23 21:15:17,225: INFO: app]: Custom theme applied to Streamlit app.
 [2026-07-23 21:15:17,258: INFO: app]: ID card type selected: PAN
 [2026-07-23 21:15:17,259: INFO: app]: Header set for PAN Card registration.
+[2026-07-23 22:04:13,765: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 22:05:05,488: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 22:05:20,102: INFO: utils]: yaml  file: config.yaml loaded successfully
