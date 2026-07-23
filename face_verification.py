@@ -1,7 +1,13 @@
 import os
+import logging
 from pathlib import Path
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
 os.environ.setdefault("TF_ENABLE_ONEDNN_OPTS", "0")
+
+logging_str = "[%(asctime)s: %(levelname)s: %(module)s]: %(message)s"
+log_dir = "logs"
+os.makedirs(log_dir, exist_ok=True)
+logging.basicConfig(filename=os.path.join(log_dir,"ekyc_logs.log"), level=logging.INFO, format=logging_str, filemode="a")
 
 try:
     from deepface import DeepFace
@@ -10,14 +16,7 @@ except Exception as exc:
     logging.getLogger(__name__).warning("DeepFace import failed: %s", exc)
 
 import cv2
-import logging
 from utils import file_exists, read_yaml, resolve_path
-
-logging_str = "[%(asctime)s: %(levelname)s: %(module)s]: %(message)s"
-log_dir = "logs"
-os.makedirs(log_dir, exist_ok=True)
-logging.basicConfig(filename=os.path.join(log_dir,"ekyc_logs.log"), level=logging.INFO, format=logging_str, filemode="a")
-
 
 BASE_DIR = Path(__file__).resolve().parent
 config_path = str(BASE_DIR / "config.yaml")

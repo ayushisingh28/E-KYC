@@ -1,10 +1,21 @@
-import cv2
-import numpy as np
 import os
 import io
 import logging
+from pathlib import Path
+
+import cv2
+import numpy as np
 from PIL import Image
-from utils import read_yaml, file_exists
+
+try:
+    from utils import read_yaml, file_exists
+except Exception:
+    from importlib import util
+    spec = util.spec_from_file_location("utils", str(Path(__file__).resolve().parent / "utils.py"))
+    utils_module = util.module_from_spec(spec)
+    spec.loader.exec_module(utils_module)
+    read_yaml = utils_module.read_yaml
+    file_exists = utils_module.file_exists
 
 # Logging configuration
 logging_str = "[%(asctime)s: %(levelname)s: %(module)s]: %(message)s"
