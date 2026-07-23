@@ -1,11 +1,52 @@
 import os
+import sys
 import logging
+import importlib.util
+from pathlib import Path
 import streamlit as st
-from preprocess import read_image, extract_id_card, save_image
-from ocr_engine import extract_text
-from postprocess import extract_information,extract_information1
-from face_verification import detect_and_extract_face, deepface_face_comparison, get_face_embeddings
-from sql_connection import insert_records, fetch_records, check_duplicacy,insert_records_aadhar,fetch_records_aadhar,check_duplicacy_aadhar
+
+BASE_DIR = Path(__file__).resolve().parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
+
+def _load_local_module(module_name):
+    try:
+        return __import__(module_name)
+    except Exception:
+        module_path = BASE_DIR / f"{module_name}.py"
+        if not module_path.exists():
+            raise
+        spec = importlib.util.spec_from_file_location(module_name, module_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+
+preprocess = _load_local_module("preprocess")
+read_image = preprocess.read_image
+extract_id_card = preprocess.extract_id_card
+save_image = preprocess.save_image
+
+ocr_engine = _load_local_module("ocr_engine")
+extract_text = ocr_engine.extract_text
+
+postprocess = _load_local_module("postprocess")
+extract_information = postprocess.extract_information
+extract_information1 = postprocess.extract_information1
+
+face_verification = _load_local_module("face_verification")
+detect_and_extract_face = face_verification.detect_and_extract_face
+deepface_face_comparison = face_verification.deepface_face_comparison
+get_face_embeddings = face_verification.get_face_embeddings
+
+sql_connection = _load_local_module("sql_connection")
+insert_records = sql_connection.insert_records
+fetch_records = sql_connection.fetch_records
+check_duplicacy = sql_connection.check_duplicacy
+insert_records_aadhar = sql_connection.insert_records_aadhar
+fetch_records_aadhar = sql_connection.fetch_records_aadhar
+check_duplicacy_aadhar = sql_connection.check_duplicacy_aadhar
 # import toml
 import hashlib
 from urllib.parse import quote_plus

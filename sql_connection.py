@@ -1,7 +1,14 @@
 import logging
 import os
 
-import mysql.connector
+try:
+    import mysql.connector
+except Exception as exc:  # pragma: no cover - import guard for deployment environments
+    mysql = None
+    MYSQL_IMPORT_ERROR = exc
+else:
+    MYSQL_IMPORT_ERROR = None
+
 import pandas as pd
 import streamlit as st
 
@@ -47,6 +54,11 @@ def _get_db_config():
 
 def get_db_connection():
     """Open a MySQL connection using credentials from secrets or environment variables."""
+    if mysql is None:
+        message = f"MySQL connector is unavailable: {MYSQL_IMPORT_ERROR}"
+        logging.error(message)
+        raise RuntimeError(message)
+
     db_config = _get_db_config()
     if not db_config:
         message = "No MySQL configuration found. Add the [database] section in Streamlit secrets or set MYSQL_HOST/MYSQL_USER/MYSQL_PASSWORD/MYSQL_DATABASE."
@@ -85,7 +97,7 @@ def get_db_connection():
     ]:
         try:
             return mysql.connector.connect(**attempt)
-        except mysql.connector.Error as error:
+        except Exception as error:
             last_error = error
             logging.warning("MySQL connection attempt failed: %s | kwargs=%s", error, attempt)
 

@@ -1,6 +1,13 @@
 import os
-import easyocr
 import logging
+
+try:
+    import easyocr
+except Exception as exc:  # pragma: no cover - import guard for deployment environments
+    easyocr = None
+    EASYOCR_IMPORT_ERROR = exc
+else:
+    EASYOCR_IMPORT_ERROR = None
 
 logging_str = "[%(asctime)s: %(levelname)s: %(module)s]: %(message)s"
 log_dir = "logs"
@@ -10,8 +17,16 @@ logging.basicConfig(filename=os.path.join(log_dir,"ekyc_logs.log"), level=loggin
 
 def extract_text(image_path, confidence_threshold=0.2, languages=['en']):
     logging.info("Text Extraction Started...")
+    if easyocr is None:
+        logging.error("EasyOCR is unavailable: %s", EASYOCR_IMPORT_ERROR)
+        return ""
+
     # Initialize EasyOCR reader
-    reader = easyocr.Reader(languages)
+    try:
+        reader = easyocr.Reader(languages)
+    except Exception as exc:
+        logging.error("Failed to initialize EasyOCR: %s", exc)
+        return ""
     
     try:
         logging.info("Inside Try-Catch...")
