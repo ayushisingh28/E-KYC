@@ -3,6 +3,7 @@ import pandas as pd
 import logging
 import os 
 import toml
+import streamlit as st
 
 # Logging configuration
 logging_str = "[%(asctime)s: %(levelname)s: %(module)s]: %(message)s"
@@ -10,14 +11,30 @@ log_dir = "logs"
 os.makedirs(log_dir, exist_ok=True)
 logging.basicConfig(filename=os.path.join(log_dir, "ekyc_logs.log"), level=logging.INFO, format=logging_str, filemode="a")
 
-# Load database configuration from config.toml
-config = toml.load("config.toml")
-db_config = config.get("database", {})
+# # Load database configuration from config.toml
+# config = toml.load("config.toml")
+# db_config = config.get("database", {})
 
-db_user = db_config.get("user")
-db_password = db_config.get("password")
-db_host = db_config.get("host", "localhost")
-db_name = db_config.get("database")
+# db_user = db_config.get("user")
+# db_password = db_config.get("password")
+# db_host = db_config.get("host", "localhost")
+# db_name = db_config.get("database")
+
+# Read database credentials from Streamlit secrets.
+try:
+    db_config = st.secrets["database"]
+
+    db_user = db_config["user"]
+    db_password = db_config["password"]
+    db_host = db_config["host"]
+    db_name = db_config["database"]
+    db_port = int(db_config.get("port", 3306))
+
+except KeyError as error:
+    raise RuntimeError(
+        f"Missing database secret: {error}. "
+        "Add the [database] section to .streamlit/secrets.toml."
+    ) from error
 
 if not db_user or not db_password:
     logging.error("Database user or password not found in config.toml")
@@ -25,12 +42,20 @@ if not db_user or not db_password:
 
 # Establish a connection to the MySQL server
 try:
+    # mydb = mysql.connector.connect(
+    #     host=db_host,
+    #     user=db_user,
+    #     password=db_password,
+    #     database=db_name
+    # )
     mydb = mysql.connector.connect(
-        host=db_host,
-        user=db_user,
-        password=db_password,
-        database=db_name
-    )
+    host=db_host,
+    port=db_port,
+    user=db_user,
+    password=db_password,
+    database=db_name,
+    connection_timeout=15,
+)
     mycursor = mydb.cursor()
     logging.info("Connection established with database")
 except mysql.connector.Error as err:

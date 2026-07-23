@@ -6,7 +6,7 @@ from ocr_engine import extract_text
 from postprocess import extract_information,extract_information1
 from face_verification import detect_and_extract_face, deepface_face_comparison, get_face_embeddings
 from sql_connection import insert_records, fetch_records, check_duplicacy,insert_records_aadhar,fetch_records_aadhar,check_duplicacy_aadhar
-import toml
+# import toml
 import hashlib
 from urllib.parse import quote_plus
 from datetime import datetime
@@ -15,13 +15,13 @@ log_dir = "logs"
 os.makedirs(log_dir, exist_ok=True)
 logging.basicConfig(filename=os.path.join(log_dir,"ekyc_logs.log"), level=logging.INFO, format=logging_str, filemode="a")
 
-config = toml.load("config.toml")
-db_config = config.get("database", {})
+# config = toml.load("config.toml")
+# db_config = config.get("database", {})
 
-db_user = db_config.get("user")
-db_password = db_config.get("password")
-db_host = db_config.get("host", "localhost")
-db_name = db_config.get("database")
+# db_user = db_config.get("user")
+# db_password = db_config.get("password")
+# db_host = db_config.get("host", "localhost")
+# db_name = db_config.get("database")
 
 def hash_id(id_value):
     hash_object = hashlib.sha256(id_value.encode())
@@ -212,12 +212,12 @@ def main_content(image_file, face_image_file,option):
 # Main function setup as previously provided...
 def main():
     # Initialize connection.
-    db_url = f"mysql://{quote_plus(db_user)}:{quote_plus(db_password)}@{db_host}:3306/{db_name}"
-    conn = st.connection(
-        "local_db",
-        type="sql",
-        url=db_url,
-    )
+    # db_url = f"mysql+mysqlconnector://{quote_plus(db_user)}:{quote_plus(db_password)}@{db_host}:3306/{db_name}"
+    # conn = st.connection(
+    #     "local_db",
+    #     type="sql",
+    #     url=db_url,
+    # )
     wider_page()
     set_custom_theme()
     option = sidebar_section()

@@ -1891,3 +1891,53 @@ delete_url: "/_stcore/upload_file/4a4343d6-cffa-4658-bded-91e8061f2343/c733ed8b-
 [2026-06-19 16:13:36,203: INFO: face_verification]: Face embeddings retrieved successfully
 [2026-06-19 16:13:36,212: INFO: sql_connection]: Inserted records successfully into aadhar table.
 [2026-06-19 16:13:36,217: INFO: app]: New user record inserted: 42107a23cfda8471f920fac4d0f0b9f828f41b684665e1c879d59be95ae7f836
+[2026-07-23 14:29:41,783: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 14:30:41,477: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 15:36:39,665: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 15:40:54,059: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 15:42:26,341: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 15:42:55,604: WARNING: module_wrapper]: From C:\Users\ayush\OneDrive\Desktop\Ayushi All Projects 2026\Data Sciecne codes\E-KYC\.venv\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+[2026-07-23 15:42:57,172: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 15:42:58,334: INFO: sql_connection]: Connection established with database
+[2026-07-23 15:42:58,469: INFO: sql_connection]: Database tables are ready.
+[2026-07-23 15:43:40,992: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 15:44:08,057: WARNING: module_wrapper]: From C:\Users\ayush\OneDrive\Desktop\Ayushi All Projects 2026\Data Sciecne codes\E-KYC\.venv\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+[2026-07-23 15:44:09,443: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 15:44:09,679: INFO: sql_connection]: Connection established with database
+[2026-07-23 15:44:09,686: INFO: sql_connection]: Database tables are ready.
+[2026-07-23 15:44:40,137: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 15:45:00,655: WARNING: module_wrapper]: From C:\Users\ayush\OneDrive\Desktop\Ayushi All Projects 2026\Data Sciecne codes\E-KYC\.venv\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+[2026-07-23 15:45:01,677: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 15:45:01,779: INFO: sql_connection]: Connection established with database
+[2026-07-23 15:45:01,784: INFO: sql_connection]: Database tables are ready.
+[2026-07-23 15:45:02,098: INFO: app]: Page layout set to wider configuration.
+[2026-07-23 15:45:02,098: INFO: app]: Custom theme applied to Streamlit app.
+[2026-07-23 15:45:02,099: INFO: app]: ID card type selected: PAN
+[2026-07-23 15:45:02,100: INFO: app]: Header set for PAN Card registration.
+[2026-07-23 15:45:15,324: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 15:45:32,087: WARNING: module_wrapper]: From C:\Users\ayush\OneDrive\Desktop\Ayushi All Projects 2026\Data Sciecne codes\E-KYC\.venv\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+[2026-07-23 15:45:33,059: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 15:45:33,178: INFO: sql_connection]: Connection established with database
+[2026-07-23 15:45:33,185: INFO: sql_connection]: Database tables are ready.
+[2026-07-23 15:45:33,472: INFO: app]: Page layout set to wider configuration.
+[2026-07-23 15:45:33,472: INFO: app]: Custom theme applied to Streamlit app.
+[2026-07-23 15:45:33,473: INFO: app]: ID card type selected: PAN
+[2026-07-23 15:45:33,473: INFO: app]: Header set for PAN Card registration.
+[2026-07-23 15:47:49,234: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 15:48:11,659: WARNING: module_wrapper]: From C:\Users\ayush\OneDrive\Desktop\Ayushi All Projects 2026\Data Sciecne codes\E-KYC\.venv\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+[2026-07-23 15:48:12,727: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 15:48:12,909: INFO: sql_connection]: Connection established with database
+[2026-07-23 15:48:12,914: INFO: sql_connection]: Database tables are ready.
+[2026-07-23 15:48:13,216: INFO: app]: Page layout set to wider configuration.
+[2026-07-23 15:48:13,217: INFO: app]: Custom theme applied to Streamlit app.
+[2026-07-23 15:48:13,219: INFO: app]: ID card type selected: PAN
+[2026-07-23 15:48:13,219: INFO: app]: Header set for PAN Card registration.
+[2026-07-23 15:55:38,700: INFO: app]: Page layout set to wider configuration.
+[2026-07-23 15:55:38,702: INFO: app]: Custom theme applied to Streamlit app.
+[2026-07-23 15:55:38,706: INFO: app]: ID card type selected: PAN
+[2026-07-23 15:55:38,708: INFO: app]: Header set for PAN Card registration.
