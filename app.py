@@ -201,7 +201,7 @@ def main_content(image_file, face_image_file,option):
                 logging.error("Face extraction from ID card failed.")
                 return
 
-            face_image_path1 = save_image(face_image, "face_image.jpg", path="data\\02_intermediate_data")
+            face_image_path1 = save_image(face_image, "face_image.jpg", path="data/02_intermediate_data")
             logging.info("Faces extracted and saved.")
             is_face_verified, verification_message = deepface_face_comparison(image1_path=face_image_path1, image2_path=face_image_path2)
             logging.info(f"Face verification status: {'successful' if is_face_verified else 'failed'}.")

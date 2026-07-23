@@ -8,7 +8,7 @@ import numpy as np
 from PIL import Image
 
 try:
-    from utils import read_yaml, file_exists
+    from utils import read_yaml, file_exists, resolve_path
 except Exception:
     from importlib import util
     spec = util.spec_from_file_location("utils", str(Path(__file__).resolve().parent / "utils.py"))
@@ -16,6 +16,7 @@ except Exception:
     spec.loader.exec_module(utils_module)
     read_yaml = utils_module.read_yaml
     file_exists = utils_module.file_exists
+    resolve_path = utils_module.resolve_path
 
 # Logging configuration
 logging_str = "[%(asctime)s: %(levelname)s: %(module)s]: %(message)s"
@@ -137,12 +138,11 @@ def extract_id_card(img):
     # - Apply bilateral filtering for noise reduction
     # filtered_img = cv2.bilateralFiltering(img[y:y+h, x:x+w], 9, 75, 75)
     # - Morphological operations (e.g., erosion, dilation) for shape refinement
-    current_wd = os.getcwd()
-    filename = os.path.join(current_wd,intermediate_dir_path, conour_file_name)
+    output_dir = Path(resolve_path(intermediate_dir_path, str(BASE_DIR)) or str(BASE_DIR / "data" / "02_intermediate_data"))
+    output_dir.mkdir(parents=True, exist_ok=True)
+    filename = str(output_dir / conour_file_name)
     contour_id = img[y:y+h, x:x+w]
-    is_exists = file_exists(filename)
-    if is_exists:
-        # Remove the existing file
+    if file_exists(filename):
         os.remove(filename)
 
     cv2.imwrite(filename, contour_id)
@@ -169,19 +169,21 @@ def extract_id_card(img):
 # ------ Saving the Image ----------
 
 def save_image(image, filename, path="."):
+    output_dir = Path(resolve_path(path, str(BASE_DIR)) or str(BASE_DIR / "data" / "02_intermediate_data"))
+    output_dir.mkdir(parents=True, exist_ok=True)
+    full_path = output_dir / filename
+    full_path_str = str(full_path)
 
-  # Construct the full path
-  full_path = os.path.join(path, filename)
-  is_exists = file_exists(full_path)
-  if is_exists:
-        # Remove the existing file
-        os.remove(full_path)
+    if file_exists(full_path_str):
+        os.remove(full_path_str)
 
-  # Save the image using cv2.imwrite
-  cv2.imwrite(full_path, image)
+    success = cv2.imwrite(full_path_str, image)
+    if not success:
+        logging.warning(f"Failed to save image to {full_path_str}")
+        return None
 
-  logging.info(f"Image saved successfully: {full_path}")
-  return full_path
+    logging.info(f"Image saved successfully: {full_path_str}")
+    return full_path_str
 
 # -------------- DEBUGGING ------------------
 

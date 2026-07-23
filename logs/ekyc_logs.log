@@ -1970,3 +1970,6 @@ delete_url: "/_stcore/upload_file/4a4343d6-cffa-4658-bded-91e8061f2343/c733ed8b-
 [2026-07-23 22:16:42,382: INFO: utils]: yaml  file: C:\Users\ayush\OneDrive\Desktop\Ayushi All Projects 2026\Data Sciecne codes\E-KYC\config.yaml loaded successfully
 [2026-07-23 22:16:47,875: WARNING: face_verification]: DeepFace import failed: No module named 'deepface'
 [2026-07-23 22:16:47,876: INFO: utils]: yaml  file: C:\Users\ayush\OneDrive\Desktop\Ayushi All Projects 2026\Data Sciecne codes\E-KYC\config.yaml loaded successfully
+[2026-07-23 22:22:24,644: INFO: utils]: yaml  file: C:\Users\ayush\OneDrive\Desktop\Ayushi All Projects 2026\Data Sciecne codes\E-KYC\config.yaml loaded successfully
+[2026-07-23 22:22:24,645: WARNING: utils]: File does not exist at C:\Users\ayush\OneDrive\Desktop\Ayushi All Projects 2026\Data Sciecne codes\E-KYC\data\02_intermediate_data\test_face.jpg
+[2026-07-23 22:22:24,657: INFO: preprocess]: Image saved successfully: C:\Users\ayush\OneDrive\Desktop\Ayushi All Projects 2026\Data Sciecne codes\E-KYC\data\02_intermediate_data\test_face.jpg
