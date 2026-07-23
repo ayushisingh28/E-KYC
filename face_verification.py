@@ -1,11 +1,12 @@
 import os
+from pathlib import Path
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
 os.environ.setdefault("TF_ENABLE_ONEDNN_OPTS", "0")
 
 from deepface import DeepFace
 import cv2
 import logging
-from utils import file_exists, read_yaml
+from utils import file_exists, read_yaml, resolve_path
 
 logging_str = "[%(asctime)s: %(levelname)s: %(module)s]: %(message)s"
 log_dir = "logs"
@@ -13,12 +14,16 @@ os.makedirs(log_dir, exist_ok=True)
 logging.basicConfig(filename=os.path.join(log_dir,"ekyc_logs.log"), level=logging.INFO, format=logging_str, filemode="a")
 
 
-config_path = "config.yaml"
+BASE_DIR = Path(__file__).resolve().parent
+config_path = str(BASE_DIR / "config.yaml")
 config = read_yaml(config_path)
 
 artifacts = config['artifacts']
-cascade_path = artifacts['HAARCASCADE_PATH']
-output_path = artifacts['INTERMIDEIATE_DIR']
+cascade_path = resolve_path(artifacts['HAARCASCADE_PATH'], str(BASE_DIR))
+output_path = resolve_path(artifacts['INTERMIDEIATE_DIR'], str(BASE_DIR))
+
+if output_path:
+    os.makedirs(output_path, exist_ok=True)
 
 def detect_and_extract_face(img):
     logging.info("Extracting face...")
@@ -75,8 +80,8 @@ def detect_and_extract_face(img):
         # extracted_face_rgb = cv2.cvtColor(extracted_face, cv2.COLOR_BGR2RGB)
 
         
-        current_wd = os.getcwd()
-        filename = os.path.join(current_wd, output_path, "extracted_face.jpg")
+        filename = os.path.join(output_path, "extracted_face.jpg") if output_path else "extracted_face.jpg"
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         if os.path.exists(filename):
             # Remove the existing file

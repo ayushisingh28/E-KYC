@@ -1,6 +1,8 @@
 import yaml
 import os
 import logging
+from pathlib import Path
+
 
 def file_exists(file_path):
     if not file_path:
@@ -29,5 +31,21 @@ def create_dirs(dirs: list):
     for dir in dirs:
         os.makedirs(dir, exist_ok=True)
         logging.info(f"Directory is created at {dir}")
+
+
+def resolve_path(path_to_file: str, base_dir: str | None = None) -> str | None:
+    if not path_to_file:
+        return None
+
+    candidate = str(path_to_file).replace("\\", "/")
+    if not candidate:
+        return None
+
+    base_path = Path(base_dir or Path(__file__).resolve().parent)
+    path = Path(candidate)
+    if not path.is_absolute():
+        path = base_path / path
+
+    return str(path.resolve())
 
 # When you run this example, you will see log messages indicating that each directory has been created. If any of the directories already exist, they will be ignored, and no error will be raised due to the exist_ok=True parameter. I will be passing the list and exist_ok will ensure duplicy is not achieved 

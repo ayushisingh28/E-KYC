@@ -1941,3 +1941,23 @@ delete_url: "/_stcore/upload_file/4a4343d6-cffa-4658-bded-91e8061f2343/c733ed8b-
 [2026-07-23 15:55:38,702: INFO: app]: Custom theme applied to Streamlit app.
 [2026-07-23 15:55:38,706: INFO: app]: ID card type selected: PAN
 [2026-07-23 15:55:38,708: INFO: app]: Header set for PAN Card registration.
+[2026-07-23 17:38:50,821: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 17:39:14,999: WARNING: module_wrapper]: From C:\Users\ayush\OneDrive\Desktop\Ayushi All Projects 2026\Data Sciecne codes\E-KYC\.venv\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+[2026-07-23 17:39:16,477: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 17:39:16,609: INFO: app]: Page layout set to wider configuration.
+[2026-07-23 17:39:16,609: INFO: app]: Custom theme applied to Streamlit app.
+[2026-07-23 17:39:16,610: INFO: app]: ID card type selected: PAN
+[2026-07-23 17:39:16,610: INFO: app]: Header set for PAN Card registration.
+[2026-07-23 18:02:22,754: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 18:02:47,906: WARNING: module_wrapper]: From C:\Users\ayush\OneDrive\Desktop\Ayushi All Projects 2026\Data Sciecne codes\E-KYC\.venv\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+[2026-07-23 18:02:49,187: INFO: utils]: yaml  file: config.yaml loaded successfully
+[2026-07-23 18:02:49,298: INFO: app]: Page layout set to wider configuration.
+[2026-07-23 18:02:49,299: INFO: app]: Custom theme applied to Streamlit app.
+[2026-07-23 18:02:49,302: INFO: app]: ID card type selected: PAN
+[2026-07-23 18:02:49,304: INFO: app]: Header set for PAN Card registration.
+[2026-07-23 21:15:17,211: INFO: app]: Page layout set to wider configuration.
+[2026-07-23 21:15:17,225: INFO: app]: Custom theme applied to Streamlit app.
+[2026-07-23 21:15:17,258: INFO: app]: ID card type selected: PAN
+[2026-07-23 21:15:17,259: INFO: app]: Header set for PAN Card registration.

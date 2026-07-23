@@ -1,75 +1,104 @@
+import logging
+import os
+
 import mysql.connector
 import pandas as pd
-import logging
-import os 
-import toml
 import streamlit as st
 
-# Logging configuration
+
 logging_str = "[%(asctime)s: %(levelname)s: %(module)s]: %(message)s"
 log_dir = "logs"
 os.makedirs(log_dir, exist_ok=True)
-logging.basicConfig(filename=os.path.join(log_dir, "ekyc_logs.log"), level=logging.INFO, format=logging_str, filemode="a")
-
-# # Load database configuration from config.toml
-# config = toml.load("config.toml")
-# db_config = config.get("database", {})
-
-# db_user = db_config.get("user")
-# db_password = db_config.get("password")
-# db_host = db_config.get("host", "localhost")
-# db_name = db_config.get("database")
-
-# Read database credentials from Streamlit secrets.
-try:
-    db_config = st.secrets["database"]
-
-    db_user = db_config["user"]
-    db_password = db_config["password"]
-    db_host = db_config["host"]
-    db_name = db_config["database"]
-    db_port = int(db_config.get("port", 3306))
-
-except KeyError as error:
-    raise RuntimeError(
-        f"Missing database secret: {error}. "
-        "Add the [database] section to .streamlit/secrets.toml."
-    ) from error
-
-if not db_user or not db_password:
-    logging.error("Database user or password not found in config.toml")
-    raise ValueError("Database user or password not found in config.toml")
-
-# Establish a connection to the MySQL server
-try:
-    # mydb = mysql.connector.connect(
-    #     host=db_host,
-    #     user=db_user,
-    #     password=db_password,
-    #     database=db_name
-    # )
-    mydb = mysql.connector.connect(
-    host=db_host,
-    port=db_port,
-    user=db_user,
-    password=db_password,
-    database=db_name,
-    connection_timeout=15,
+logging.basicConfig(
+    filename=os.path.join(log_dir, "ekyc_logs.log"),
+    level=logging.INFO,
+    format=logging_str,
+    filemode="a",
 )
-    mycursor = mydb.cursor()
-    logging.info("Connection established with database")
-except mysql.connector.Error as err:
-    logging.error(f"Error connecting to the database: {err}")
-    raise RuntimeError(
-        "Unable to connect to MySQL. " \
-        "Check config.toml, make sure the user has privileges for the database, " \
-        "and verify the database name is correct."
-    ) from err
 
 
-def ensure_tables_exist():
+def _get_db_config():
+    """Load database credentials from Streamlit secrets or environment variables."""
+    db_config = {}
+
     try:
-        mycursor.execute(
+        if isinstance(st.secrets.get("database"), dict):
+            db_config.update(st.secrets["database"])
+    except Exception:
+        db_config = {}
+
+    env_mapping = {
+        "host": ["MYSQL_HOST", "DB_HOST"],
+        "port": ["MYSQL_PORT", "DB_PORT"],
+        "user": ["MYSQL_USER", "DB_USER"],
+        "password": ["MYSQL_PASSWORD", "DB_PASSWORD"],
+        "database": ["MYSQL_DATABASE", "DB_NAME"],
+    }
+
+    for key, env_names in env_mapping.items():
+        for env_name in env_names:
+            value = os.getenv(env_name)
+            if value not in (None, ""):
+                db_config[key] = value
+                break
+
+    return db_config
+
+
+def get_db_connection():
+    """Open a MySQL connection using credentials from secrets or environment variables."""
+    db_config = _get_db_config()
+    if not db_config:
+        message = "No MySQL configuration found. Add the [database] section in Streamlit secrets or set MYSQL_HOST/MYSQL_USER/MYSQL_PASSWORD/MYSQL_DATABASE."
+        logging.error(message)
+        raise RuntimeError(message)
+
+    required_fields = ["host", "user", "password", "database"]
+    missing_fields = [field for field in required_fields if not str(db_config.get(field, "")).strip()]
+    if missing_fields:
+        message = f"Missing MySQL config values: {', '.join(missing_fields)}"
+        logging.error(message)
+        raise RuntimeError(message)
+
+    try:
+        port = int(db_config.get("port", 3306))
+    except (TypeError, ValueError) as error:
+        message = f"Invalid MySQL port: {db_config.get('port')}"
+        logging.error(message)
+        raise RuntimeError(message) from error
+
+    connection_kwargs = {
+        "host": db_config["host"],
+        "port": port,
+        "user": db_config["user"],
+        "password": db_config["password"],
+        "database": db_config["database"],
+        "connection_timeout": 30,
+        "use_pure": True,
+    }
+
+    last_error = None
+    for attempt in [
+        connection_kwargs,
+        {**connection_kwargs, "ssl_disabled": True},
+        {**connection_kwargs, "ssl_disabled": False, "auth_plugin": "mysql_native_password"},
+    ]:
+        try:
+            return mysql.connector.connect(**attempt)
+        except mysql.connector.Error as error:
+            last_error = error
+            logging.warning("MySQL connection attempt failed: %s | kwargs=%s", error, attempt)
+
+    message = f"Unable to connect to MySQL at '{db_config.get('host', '')}'. Last error: {last_error}"
+    logging.error(message)
+    raise RuntimeError(message) from last_error
+
+
+def ensure_tables_exist(connection):
+    """Create required tables if they do not already exist."""
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS users (
                 id VARCHAR(128) PRIMARY KEY,
@@ -81,7 +110,7 @@ def ensure_tables_exist():
             )
             """
         )
-        mycursor.execute(
+        cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS aadhar (
                 id VARCHAR(128) PRIMARY KEY,
@@ -93,108 +122,97 @@ def ensure_tables_exist():
             )
             """
         )
-        mydb.commit()
-        logging.info("Database tables are ready.")
-    except Exception as e:
-        logging.error(f"Error creating database tables: {e}")
-        raise RuntimeError("Unable to create required database tables.") from e
+        connection.commit()
+    finally:
+        cursor.close()
 
 
-ensure_tables_exist()
+def _open_database():
+    connection = get_db_connection()
+    ensure_tables_exist(connection)
+    return connection
 
 
 def insert_records(text_info):
+    connection = None
+    cursor = None
     try:
-        sql = "INSERT INTO users(id, name, father_name, dob, id_type, embedding) VALUES (%s, %s, %s, %s, %s, %s)"
-        values = (text_info['ID'],
-                  text_info['Name'],
-                  text_info["Father's Name"],
-                  text_info['DOB'],  # Make sure this is formatted as a string 'YYYY-MM-DD'
-                  text_info['ID Type'],
-                  str(text_info['Embedding']))
-        
-        mycursor.execute(sql, values)
-        mydb.commit()
-        logging.info("Inserted records successfully into users table.")
+        connection = _open_database()
+        cursor = connection.cursor()
+        cursor.execute(
+            "INSERT INTO users(id, name, father_name, dob, id_type, embedding) VALUES (%s, %s, %s, %s, %s, %s)",
+            (
+                text_info["ID"], text_info["Name"], text_info.get("Father's Name", ""),
+                text_info["DOB"], text_info.get("ID Type", "PAN"), str(text_info["Embedding"]),
+            ),
+        )
+        connection.commit()
         return True, "Record inserted successfully."
-    except Exception as e:
-        logging.error(f"Error inserting records into users table: {e}")
-        return False, f"Could not insert record: {e}"
+    except Exception as error:
+        logging.error("Error inserting PAN record: %s", error)
+        return False, f"Could not insert record: {error}"
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
 
 def insert_records_aadhar(text_info):
+    connection = None
+    cursor = None
     try:
-        sql = "INSERT INTO aadhar(id, name, gender, dob, id_type, embedding) VALUES (%s, %s, %s, %s, %s, %s)"
-        values = (text_info['ID'],
-                  text_info['Name'],
-                  text_info["Gender"],
-                  text_info['DOB'],  # Make sure this is formatted as a string 'YYYY-MM-DD'
-                  text_info['ID Type'],
-                  str(text_info['Embedding']))
-        
-        mycursor.execute(sql, values)
-        mydb.commit()
-        logging.info("Inserted records successfully into aadhar table.")
+        connection = _open_database()
+        cursor = connection.cursor()
+        cursor.execute(
+            "INSERT INTO aadhar(id, name, gender, dob, id_type, embedding) VALUES (%s, %s, %s, %s, %s, %s)",
+            (
+                text_info["ID"], text_info["Name"], text_info.get("Gender", ""),
+                text_info["DOB"], text_info.get("ID Type", "AADHAR"), str(text_info["Embedding"]),
+            ),
+        )
+        connection.commit()
         return True, "Record inserted successfully."
-    except Exception as e:
-        logging.error(f"Error inserting records into aadhar table: {e}")
-        return False, f"Could not insert record: {e}"
+    except Exception as error:
+        logging.error("Error inserting Aadhaar record: %s", error)
+        return False, f"Could not insert record: {error}"
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def _fetch_records(table_name, user_id):
+    connection = None
+    cursor = None
+    try:
+        connection = _open_database()
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT * FROM {table_name} WHERE id = %s", (user_id,))
+        records = cursor.fetchall()
+        return pd.DataFrame(records, columns=[column[0] for column in cursor.description]) if records else pd.DataFrame()
+    except Exception as error:
+        logging.error("Error fetching %s records: %s", table_name, error)
+        return pd.DataFrame()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
 
 def fetch_records(text_info):
-    try:
-        sql = "SELECT * FROM users WHERE id = %s"
-        values = (text_info['ID'],)
-        mycursor.execute(sql, values)
-        result = mycursor.fetchall()
-        if result:
-            df = pd.DataFrame(result, columns=[desc[0] for desc in mycursor.description])
-            logging.info("Fetched records successfully from users table.")
-            return df
-        else:
-            logging.info("No records found.")
-            return pd.DataFrame()
-    except Exception as e:
-        logging.error(f"Error fetching records: {e}")
-        return pd.DataFrame()
-    
+    return _fetch_records("users", text_info["ID"])
+
+
 def fetch_records_aadhar(text_info):
-    try:
-        sql = "SELECT * FROM aadhar WHERE id = %s"
-        values = (text_info['ID'],)
-        mycursor.execute(sql, values)
-        result = mycursor.fetchall()
-        if result:
-            df = pd.DataFrame(result, columns=[desc[0] for desc in mycursor.description])
-            logging.info("Fetched records successfully from aadhar table.")
-            return df
-        else:
-            logging.info("No records found.")
-            return pd.DataFrame()
-    except Exception as e:
-        logging.error(f"Error fetching records: {e}")
-        return pd.DataFrame()
+    return _fetch_records("aadhar", text_info["ID"])
+
 
 def check_duplicacy(text_info):
-    try:
-        df = fetch_records(text_info)
-        if df.shape[0] > 0:
-            logging.info("Duplicate records found.")
-            return True
-        else:
-            logging.info("No duplicate records found.")
-            return False
-    except Exception as e:
-        logging.error(f"Error checking duplicacy: {e}")
-        return False
-    
+    return not fetch_records(text_info).empty
+
+
 def check_duplicacy_aadhar(text_info):
-    try:
-        df = fetch_records_aadhar(text_info)
-        if df.shape[0] > 0:
-            logging.info("Duplicate records found.")
-            return True
-        else:
-            logging.info("No duplicate records found.")
-            return False
-    except Exception as e:
-        logging.error(f"Error checking duplicacy: {e}")
-        return False
+    return not fetch_records_aadhar(text_info).empty
