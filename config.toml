@@ -1,5 +1,0 @@
-[database]
-user = "ekycadmin"
-password = "admin@123"
-host = "localhost"
-database = "ekyc_db"
