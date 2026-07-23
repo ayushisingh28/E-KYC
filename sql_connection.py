@@ -1,5 +1,13 @@
 import logging
 import os
+from collections.abc import Mapping
+from pathlib import Path
+from urllib.parse import urlparse
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python < 3.11
+    import tomli as tomllib
 
 try:
     import mysql.connector
@@ -25,7 +33,7 @@ logging.basicConfig(
 
 
 def _get_db_config():
-    """Load database credentials from environment variables and Streamlit secrets."""
+    """Load database credentials from environment variables, Streamlit secrets, or the local secrets file."""
     db_config = {}
 
     candidate_names = {
@@ -36,6 +44,34 @@ def _get_db_config():
         "database": ["database", "MYSQL_DATABASE", "MYSQLDATABASE", "DB_NAME", "DATABASE_NAME"],
     }
 
+    def _apply_config(config):
+        if not isinstance(config, Mapping):
+            return
+        for key, names in candidate_names.items():
+            for name in names:
+                value = config.get(name)
+                if value not in (None, ""):
+                    db_config[key] = value
+                    break
+
+    def _apply_url_config(raw_value):
+        if not raw_value:
+            return
+        try:
+            parsed = urlparse(str(raw_value))
+        except Exception:
+            return
+        if parsed.scheme.startswith("mysql") and parsed.hostname:
+            db_config["host"] = parsed.hostname
+            if parsed.port:
+                db_config["port"] = parsed.port
+            if parsed.username:
+                db_config["user"] = parsed.username
+            if parsed.password:
+                db_config["password"] = parsed.password
+            if parsed.path and parsed.path not in ("/", ""):
+                db_config["database"] = parsed.path.lstrip("/")
+
     for key, names in candidate_names.items():
         for name in names:
             value = os.getenv(name)
@@ -43,15 +79,34 @@ def _get_db_config():
                 db_config[key] = value
                 break
 
+    for name in ["DATABASE_URL", "MYSQL_URL", "DB_URL", "SQLALCHEMY_DATABASE_URI"]:
+        _apply_url_config(os.getenv(name))
+
     try:
-        secret_config = st.secrets.get("database")
-        if isinstance(secret_config, dict):
-            for key, names in candidate_names.items():
-                for name in names:
-                    value = secret_config.get(name)
-                    if value not in (None, ""):
-                        db_config[key] = value
-                        break
+        secrets_dict = st.secrets.to_dict()
+        if isinstance(secrets_dict, Mapping):
+            secret_config = secrets_dict.get("database", secrets_dict)
+            if isinstance(secret_config, Mapping):
+                _apply_config(secret_config)
+                for name in ["DATABASE_URL", "MYSQL_URL", "DB_URL", "SQLALCHEMY_DATABASE_URI"]:
+                    _apply_url_config(secret_config.get(name))
+    except Exception:
+        pass
+
+    try:
+        roots = [Path(__file__).resolve().parent, Path.cwd()]
+        for root in roots:
+            for candidate in [root / ".streamlit" / "secrets.toml", root / "secrets.toml"]:
+                if not candidate.exists():
+                    continue
+                with candidate.open("rb") as handle:
+                    parsed = tomllib.load(handle)
+                if isinstance(parsed, Mapping):
+                    file_config = parsed.get("database", parsed)
+                    if isinstance(file_config, Mapping):
+                        _apply_config(file_config)
+                        if db_config:
+                            return db_config
     except Exception:
         pass
 
