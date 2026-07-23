@@ -25,29 +25,35 @@ logging.basicConfig(
 
 
 def _get_db_config():
-    """Load database credentials from Streamlit secrets or environment variables."""
+    """Load database credentials from environment variables and Streamlit secrets."""
     db_config = {}
 
-    try:
-        if isinstance(st.secrets.get("database"), dict):
-            db_config.update(st.secrets["database"])
-    except Exception:
-        db_config = {}
-
-    env_mapping = {
-        "host": ["MYSQL_HOST", "DB_HOST"],
-        "port": ["MYSQL_PORT", "DB_PORT"],
-        "user": ["MYSQL_USER", "DB_USER"],
-        "password": ["MYSQL_PASSWORD", "DB_PASSWORD"],
-        "database": ["MYSQL_DATABASE", "DB_NAME"],
+    candidate_names = {
+        "host": ["host", "MYSQL_HOST", "MYSQLHOST", "DB_HOST", "DATABASE_HOST"],
+        "port": ["port", "MYSQL_PORT", "MYSQLPORT", "DB_PORT", "DATABASE_PORT"],
+        "user": ["user", "MYSQL_USER", "MYSQLUSER", "DB_USER", "DATABASE_USER"],
+        "password": ["password", "MYSQL_PASSWORD", "MYSQLPASSWORD", "DB_PASSWORD", "DATABASE_PASSWORD"],
+        "database": ["database", "MYSQL_DATABASE", "MYSQLDATABASE", "DB_NAME", "DATABASE_NAME"],
     }
 
-    for key, env_names in env_mapping.items():
-        for env_name in env_names:
-            value = os.getenv(env_name)
+    for key, names in candidate_names.items():
+        for name in names:
+            value = os.getenv(name)
             if value not in (None, ""):
                 db_config[key] = value
                 break
+
+    try:
+        secret_config = st.secrets.get("database")
+        if isinstance(secret_config, dict):
+            for key, names in candidate_names.items():
+                for name in names:
+                    value = secret_config.get(name)
+                    if value not in (None, ""):
+                        db_config[key] = value
+                        break
+    except Exception:
+        pass
 
     return db_config
 
